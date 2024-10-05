@@ -4,9 +4,17 @@ from telebot import TeleBot
 # from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import parser
 import os
+from dotenv import load_dotenv, find_dotenv
 
-API_TOKEN = "5175758888:AAEEN_mkh-h9nylM067_L3M44TKX7HxvC3s"
-ADMIN_CHAT_ID = '750109032'
+
+if not find_dotenv():
+    print('Ключ не найден')
+else:
+    load_dotenv()
+
+
+API_TOKEN = os.getenv('BOT_KEY')
+ADMIN_CHAT_ID = os.getenv('ADMIN_CHAT')
 
 # Объект бота
 bot = TeleBot(token=API_TOKEN)
@@ -62,11 +70,14 @@ def get_result(message):
                     user_states[message.from_user.id]["number"]
                     )
     bot.send_message(message.chat.id, "Товары собраны!!!")
+    bot.send_message(ADMIN_CHAT_ID, f'Собраны товары: {user_states[message.from_user.id]['product']}\n'
+                                    f'Количество: {user_states[message.from_user.id]['number']}\n'
+                                    f'Пользователь: {message.from_user.first_name} (id:{message.from_user.id})')
     # Отправляем файл в чат
     file = open(uniq_file_name, 'rb')
     bot.send_document(message.chat.id, file)
     # Удаляем файл
-    # os.remove(uniq_file_name)
+    os.remove(uniq_file_name)
 
 
 def main():
