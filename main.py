@@ -9,9 +9,15 @@ from logging import config
 from logging_conf import dict_config
 
 
+# Создаем дирректорию для логов
+if not os.path.exists('logs'):
+    os.mkdir('logs')
+    
 # Настройка логирования
 config.dictConfig(dict_config)
 logger = logging.getLogger('appLogger')
+
+
 
 # Загрузка переменных окружения
 if not find_dotenv():
