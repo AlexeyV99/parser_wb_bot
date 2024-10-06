@@ -2,6 +2,7 @@ import requests
 import csv
 import datetime
 
+
 ITEM = 'Высокие кроссовки для девочки'
 NUMBER = 5
 
@@ -27,7 +28,7 @@ def save_csv(item, file_name):
                          ])
 
 
-def find_item(response, file_name, number):
+def find_item(response, file_name, number, logger):
     # time.sleep(1)
     # global NUMBER
     global ITEMS
@@ -35,8 +36,8 @@ def find_item(response, file_name, number):
         if number <= 0:
             return True
         try:
-            print(f'{number} {value['id']}: {value['name']}: рейтинг: {value['reviewRating']}: цена: '
-                  f'{value['sizes'][0]['price']['total'] / 100}')
+            logger.info(f'{number} {value["id"]}: {value["name"]}: рейтинг: {value["reviewRating"]}: цена: '
+                  f'{value["sizes"][0]["price"]["total"] / 100}')
             i_value = {
                 'link': f"https://www.wildberries.ru/catalog/{value['id']}/detail.aspx",
                 'name': value['name'],
@@ -49,11 +50,11 @@ def find_item(response, file_name, number):
             print(f'!!! ERROR !!! {e}')
 
 
-def get_page(file_name: str, item: str, number: int = 5):
+def get_page(file_name: str, item: str, number: int = 5, logger = None):
     # global NUMBER = number
     page = 1
     while True:
-        print(f'Страница: {page}')
+        logger.info(f'Страница: {page}')
         params = {
             'ab_testing': 'false',
             'appType': '1',
@@ -70,11 +71,13 @@ def get_page(file_name: str, item: str, number: int = 5):
             response = requests.get('https://search.wb.ru/exactmatch/ru/common/v7/search', params=params)
             if response.status_code == 200:
                 break
+        
         # with open('json.json', 'w', encoding='utf-8') as file:
         #     json.dump(response.json(), file)
-
-        if len(response.json()) != 0:
-            result = find_item(response, file_name, number)
+        
+        logger.info(f"Товаров на странице:{len(response.json()['data']['products'])}")
+        if len(response.json()['data']['products']) > 0:
+            result = find_item(response, file_name, number, logger)
             if result:
                 return (page - 1) * 100 + result
         else:
@@ -82,12 +85,3 @@ def get_page(file_name: str, item: str, number: int = 5):
 
         page += 1
         number -= 100
-
-
-def main():
-    file_name = create_csv()
-    get_page(file_name, ITEM)
-
-
-if __name__ == '__main__':
-    main()
